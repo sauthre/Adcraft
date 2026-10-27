@@ -142,6 +142,8 @@
     <select id="dAssigned"><option value="">Unassigned</option><option value="hellotheadcraft@gmail.com">hellotheadcraft@gmail.com</option><option value="Flarefixdaily@gmail.com">Flarefixdaily@gmail.com</option></select>
     <label for="dFollow">Follow-up date</label>
     <input id="dFollow" type="date">
+    <label for="dTeamUpdate">Update for client (shown in the client portal)</label>
+    <textarea id="dTeamUpdate" rows="3" placeholder="What the client should see as the latest update — leave blank to keep the current one"></textarea>
     <div style="margin-top:14px"><button id="saveDetailsBtn" type="button">Save details →</button></div>
     <h3 style="margin-top:24px">Notes</h3>
     <div id="notesList"></div>
@@ -223,6 +225,9 @@ document.getElementById("recoveryForm").addEventListener("submit",async function
   var m=location.hash.match(/access_token=([^&]+).*type=recovery/)||location.hash.match(/type=recovery.*access_token=([^&]+)/);
   if(m){sessionStorage.setItem("adcraft_recovery_token",decodeURIComponent(m[1]));document.getElementById("loginView").style.display="none";document.getElementById("appView").style.display="none";document.getElementById("recoveryView").style.display="block";}
 })();
+// Session restore: a saved session in this tab must survive a page refresh.
+// (Same bug the client portal had — without this, refresh always dropped to login.)
+if(!location.hash && token()){showApp();loadLeads(false);}
 
 document.getElementById("refreshBtn").addEventListener("click",function(){loadLeads(false);});
 ["statusFilter","search","dateFrom","dateTo","teamFilter","assignedFilter"].forEach(function(id){document.getElementById(id).addEventListener("input",function(){page=1;renderLeads();});document.getElementById(id).addEventListener("change",function(){page=1;renderLeads();});});
@@ -293,6 +298,7 @@ function exportCSV(){
   var csv=["Name,Company,Email,Phone,Team size,Status,Assigned to,Follow-up date,Submitted,Message"].join(",")+"\n"+rows.map(function(l){return [l.name,l.company,l.email,l.phone,l.team_size,l.status,l.assigned_to,l.follow_up_date,l.created_at,l.message].map(q).join(",");}).join("\n");
   var a=document.createElement("a");a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));a.download="adcraft-leads-"+istDate(new Date().toISOString())+".csv";a.click();URL.revokeObjectURL(a.href);
 }
+var currentCaseId=null;
 async function openDetail(id){
   var l=leads.find(function(x){return x.id===id;});if(!l) return;currentId=id;currentLead=l;
   document.getElementById("detailTitle").textContent="Lead: "+l.name;
@@ -308,7 +314,8 @@ async function openDetail(id){
   document.getElementById("dStatus").value=l.status||"new";
   document.getElementById("dAssigned").value=l.assigned_to||"";
   document.getElementById("dFollow").value=l.follow_up_date||"";
-  document.getElementById("newNote").value="";
+  document.getElementById("newNote").value="";currentCaseId=null;document.getElementById("dTeamUpdate").value="";
+  try{var cr=await fetch(SUPABASE_URL+"/rest/v1/client_cases?lead_id=eq."+encodeURIComponent(id)+"&select=id,team_update&order=created_at.desc",{headers:authHeaders()});var cs=await cr.json();if(cs&&cs[0]){currentCaseId=cs[0].id;document.getElementById("dTeamUpdate").value=cs[0].team_update||"";}}catch(e){}
   document.getElementById("detailModal").classList.add("open");
   await Promise.all([loadNotes(),loadHistory()]);
 }
@@ -347,6 +354,11 @@ document.getElementById("saveDetailsBtn").addEventListener("click",async functio
     var l=leads.find(function(x){return x.id===currentId;});if(l&&updated[0]) Object.assign(l,updated[0]);
     currentLead=l||currentLead;renderStats();renderLeads();await loadHistory();
     document.getElementById("dUpdated").textContent=fmtDate(currentLead.updated_at);
+    try{
+      var tu=document.getElementById("dTeamUpdate").value.trim();
+      if(currentCaseId){await fetch(SUPABASE_URL+"/rest/v1/client_cases?id=eq."+encodeURIComponent(currentCaseId),{method:"PATCH",headers:authHeaders({"Content-Type":"application/json","Prefer":"return=minimal"}),body:JSON.stringify({team_update:tu})});}
+      else if(tu){await fetch(SUPABASE_URL+"/rest/v1/client_cases",{method:"POST",headers:authHeaders({"Content-Type":"application/json","Prefer":"return=minimal"}),body:JSON.stringify({lead_id:currentId,client_email:currentLead.email,status:newStatus,team_update:tu})});}
+    }catch(e){show(document.getElementById("appErr"),"Details saved, but the client-facing update could not be saved.");}
     show(document.getElementById("appOk"),"Details saved.");
   }catch(err){show(document.getElementById("appErr"),err.message);}
   btn.disabled=false;btn.textContent="Save details →";
