@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AdCraft Automations — Client Portal</title>
+<meta name="description" content="AdCraft Automations client portal: create an account, sign in, and view only your own enquiries and their status.">
+<style>
+  :root{--navy:#12263F;--blue:#0B74D6;--bg:#F4F7FB;--card:#fff;--ink:#16283f;--muted:#5a6b7f;--line:#dbe4ee;--green:#1e7d4d;--red:#b3261e}
+  *{box-sizing:border-box} body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+  .wrap{max-width:860px;margin:0 auto;padding:20px}
+  header{background:var(--navy);color:#fff} header .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+  .brand{font-weight:800;font-size:20px} .brand span{color:#7ec2f5} .tag{background:var(--blue);color:#fff;border-radius:999px;padding:4px 12px;font-size:13px;font-weight:700}
+  h1{font-size:26px;margin:8px 0 4px} p.lead{color:var(--muted);margin:0 0 16px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px;margin:16px 0}
+  label{display:block;font-weight:700;margin:12px 0 6px} input,select{width:100%;padding:13px 14px;border:1px solid var(--line);border-radius:10px;font-size:16px;background:#fff;color:var(--ink)}
+  button{background:var(--blue);color:#fff;border:0;border-radius:10px;padding:13px 20px;font-size:16px;font-weight:700;cursor:pointer;min-height:48px}
+  button.secondary{background:#fff;color:var(--navy);border:1px solid var(--line)} button.google{background:#fff;color:var(--ink);border:1px solid var(--line);width:100%}
+  button:disabled{opacity:.6;cursor:wait}
+  .err{background:#fdecea;color:var(--red);border:1px solid #f5c2bd;border-radius:10px;padding:12px 14px;margin:12px 0;display:none}
+  .ok{background:#e6f4ec;color:var(--green);border:1px solid #bfe3cd;border-radius:10px;padding:12px 14px;margin:12px 0;display:none}
+  .muted{color:var(--muted);font-size:14px} .link{background:none;border:0;color:var(--blue);font-weight:700;cursor:pointer;padding:0;min-height:auto;text-decoration:underline}
+  .tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px} .tabs button.secondary.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+  .case{border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin:10px 0;background:#fff}
+  .badge{display:inline-block;background:#eaf2fc;color:var(--navy);border-radius:999px;padding:3px 10px;font-size:13px;font-weight:700;text-transform:capitalize}
+  .badge.won{background:#e6f4ec;color:var(--green)} .badge.lost{background:#eee;color:#666}
+  .meta{color:var(--muted);font-size:14px;margin-top:4px}
+  .topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+  @media(max-width:600px){.wrap{padding:16px} h1{font-size:22px}}
+</style>
+</head>
+<body>
+<header><div class="wrap"><div class="brand">AdCraft <span>Automations</span></div><div class="tag">Client Portal</div></div></header>
+<main class="wrap">
+
+<section id="authView" class="card">
+  <h1>Client sign-in</h1>
+  <p class="lead">Create an account or sign in to view only your own enquiries and their status. Use the same email you used for your enquiry, so the team can link it to your account.</p>
+  <div id="authErr" class="err" role="alert"></div>
+  <div id="authOk" class="ok" role="status"></div>
+  <div class="tabs">
+    <button id="tabSignin" class="secondary active" type="button">Sign in</button>
+    <button id="tabSignup" class="secondary" type="button">Create account</button>
+  </div>
+  <form id="authForm">
+    <label for="email">Email</label>
+    <input id="email" type="email" autocomplete="username" required>
+    <label for="password">Password</label>
+    <input id="password" type="password" autocomplete="current-password" required>
+    <div id="confirmWrap" style="display:none">
+      <label for="password2">Confirm password</label>
+      <input id="password2" type="password" autocomplete="new-password">
+    </div>
+    <div style="margin-top:16px"><button id="authBtn" type="submit">Sign in →</button></div>
+  </form>
+  <div style="margin-top:16px">
+    <button id="googleBtn" class="google" type="button">Continue with Google</button>
+    <p class="muted">Google sign-in works only after the Google provider is enabled for this project in Supabase. If it shows a provider error, use Email/Password sign-in instead and tell the team.</p>
+  </div>
+  <p style="margin-top:14px"><button id="forgotToggle" class="link" type="button">Forgot password?</button></p>
+  <div id="forgotBox" style="display:none">
+    <label for="forgotEmail">Email for reset link</label>
+    <input id="forgotEmail" type="email" placeholder="Your client account email">
+    <div style="margin-top:12px"><button id="forgotBtn" type="button">Send reset link →</button></div>
+    <div id="forgotMsg" class="ok" role="status"></div>
+    <div id="forgotErr" class="err" role="alert"></div>
+  </div>
+  <p class="muted">Your session is kept only in this browser tab and clears when the tab closes. You see only cases linked to your own email — never another client's data.</p>
+</section>
+
+<section id="recoveryView" class="card" style="display:none">
+  <h1>Set a new password</h1>
+  <p class="lead">You arrived here from a password reset link. Choose a new password for your client account.</p>
+  <div id="recoveryErr" class="err" role="alert"></div>
+  <form id="recoveryForm">
+    <label for="newPassword">New password</label>
+    <input id="newPassword" type="password" autocomplete="new-password" required>
+    <label for="newPassword2">Confirm new password</label>
+    <input id="newPassword2" type="password" autocomplete="new-password" required>
+    <div style="margin-top:16px"><button id="recoveryBtn" type="submit">Save new password →</button></div>
+  </form>
+</section>
+
+<section id="appView" style="display:none">
+  <div class="topbar"><h1>My enquiries</h1><button id="logoutBtn" class="secondary" type="button">Sign out</button></div>
+  <p class="lead" id="signedInAs"></p>
+  <div id="appErr" class="err" role="alert"></div>
+  <div id="appOk" class="ok" role="status"></div>
+  <div style="margin-top:8px"><button id="refreshBtn" class="secondary" type="button">Refresh</button></div>
+  <div id="casesList" style="margin-top:8px"></div>
+  <p id="casesEmpty" class="muted" style="display:none">No enquiries linked to your email yet. If you submitted an enquiry with a different email, sign in with that email, or contact the AdCraft team so they can link it to this account.</p>
+  <p class="muted">This portal is read-only: you view your enquiry status and the team's latest update here. To change anything about an enquiry, contact the AdCraft team.</p>
+</section>
+</main>
+
+<script>
+var SUPABASE_URL = "https://tkcbwqkjtisogjmwwmxm.supabase.co";
+var PUBLISHABLE_KEY = "sb_publishable_vZTpaQjplgb51U1KoYkiuA_pOqt5VZg";
+var CLIENT_URL = "https://sauthre.github.io/Adcraft/client.html";
+var mode = "signin";
+
+function esc(v){return String(v==null?"":v).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
+function token(){return sessionStorage.getItem("adcraft_client_token")||"";}
+function signedEmail(){return sessionStorage.getItem("adcraft_client_email")||"";}
+function show(el,msg){el.textContent=msg;el.style.display="block";}
+function hide(el){el.style.display="none";}
+function fmtDate(iso){try{return new Date(iso).toLocaleString("en-IN",{timeZone:"Asia/Kolkata",day:"numeric",month:"short",year:"numeric",hour:"numeric",minute:"2-digit"});}catch(e){return iso||"—";}}
+function authHeaders(){return {"apikey":PUBLISHABLE_KEY,"Authorization":"Bearer "+token()};}
+
+function showAuth(msg){document.getElementById("authView").style.display="block";document.getElementById("appView").style.display="none";document.getElementById("recoveryView").style.display="none";if(msg) show(document.getElementById("authErr"),msg);}
+function showApp(){hide(document.getElementById("authErr"));document.getElementById("authView").style.display="none";document.getElementById("recoveryView").style.display="none";document.getElementById("appView").style.display="block";document.getElementById("signedInAs").textContent="Signed in as "+signedEmail()+". Showing only enquiries linked to this email.";}
+function setMode(m){
+  mode=m;
+  document.getElementById("tabSignin").classList.toggle("active",m==="signin");
+  document.getElementById("tabSignup").classList.toggle("active",m==="signup");
+  document.getElementById("confirmWrap").style.display=m==="signup"?"block":"none";
+  document.getElementById("password").setAttribute("autocomplete",m==="signup"?"new-password":"current-password");
+  document.getElementById("authBtn").textContent=m==="signup"?"Create account →":"Sign in →";
+}
+document.getElementById("tabSignin").addEventListener("click",function(){setMode("signin");});
+document.getElementById("tabSignup").addEventListener("click",function(){setMode("signup");});
+
+document.getElementById("authForm").addEventListener("submit",async function(e){
+  e.preventDefault();hide(document.getElementById("authErr"));hide(document.getElementById("authOk"));
+  var email=document.getElementById("email").value.trim(), pw=document.getElementById("password").value;
+  if(mode==="signup"){
+    var pw2=document.getElementById("password2").value;
+    if(pw.length<6){show(document.getElementById("authErr"),"Password must be at least 6 characters.");return;}
+    if(pw!==pw2){show(document.getElementById("authErr"),"Passwords do not match.");return;}
+  }
+  var btn=document.getElementById("authBtn");btn.disabled=true;btn.textContent=mode==="signup"?"Creating account…":"Signing in…";
+  try{
+    if(mode==="signup"){
+      var res=await fetch(SUPABASE_URL+"/auth/v1/signup",{method:"POST",headers:{"apikey":PUBLISHABLE_KEY,"Content-Type":"application/json"},body:JSON.stringify({email:email,password:pw})});
+      var data=await res.json();
+      if(!res.ok) throw new Error((data&&data.msg)||"Could not create the account. Please try again.");
+      if(!data.access_token){show(document.getElementById("authOk"),"Account created. Please check your email for the confirmation link, then sign in here.");btn.disabled=false;btn.textContent="Create account →";return;}
+      sessionStorage.setItem("adcraft_client_token",data.access_token);sessionStorage.setItem("adcraft_client_email",email);
+    }else{
+      var res2=await fetch(SUPABASE_URL+"/auth/v1/token?grant_type=password",{method:"POST",headers:{"apikey":PUBLISHABLE_KEY,"Content-Type":"application/json"},body:JSON.stringify({email:email,password:pw})});
+      var data2=await res2.json();
+      if(!res2.ok) throw new Error("Invalid email or password. Please try again.");
+      sessionStorage.setItem("adcraft_client_token",data2.access_token);sessionStorage.setItem("adcraft_client_email",email);
+    }
+    document.getElementById("password").value="";document.getElementById("password2").value="";showApp();await loadCases();
+  }catch(err){show(document.getElementById("authErr"),err.message||"Something went wrong. Please try again.");}
+  btn.disabled=false;btn.textContent=mode==="signup"?"Create account →":"Sign in →";
+});
+document.getElementById("googleBtn").addEventListener("click",function(){
+  window.location.href=SUPABASE_URL+"/auth/v1/authorize?provider=google&redirect_to="+encodeURIComponent(CLIENT_URL)+"&apikey="+encodeURIComponent(PUBLISHABLE_KEY);
+});
+document.getElementById("logoutBtn").addEventListener("click",function(){
+  sessionStorage.removeItem("adcraft_client_token");sessionStorage.removeItem("adcraft_client_email");showAuth("");
+});
+document.getElementById("refreshBtn").addEventListener("click",function(){loadCases();});
+document.getElementById("forgotToggle").addEventListener("click",function(){var b=document.getElementById("forgotBox");b.style.display=b.style.display==="none"?"block":"none";});
+document.getElementById("forgotBtn").addEventListener("click",async function(){
+  hide(document.getElementById("forgotErr"));hide(document.getElementById("forgotMsg"));
+  var email=document.getElementById("forgotEmail").value.trim();if(!email){show(document.getElementById("forgotErr"),"Please enter your client account email first.");return;}
+  var btn=this;btn.disabled=true;btn.textContent="Sending…";
+  try{
+    var res=await fetch(SUPABASE_URL+"/auth/v1/recover",{method:"POST",headers:{"apikey":PUBLISHABLE_KEY,"Content-Type":"application/json"},body:JSON.stringify({email:email,redirect_to:CLIENT_URL})});
+    if(!res.ok) throw new Error("Could not send the reset link. Please try again.");
+    show(document.getElementById("forgotMsg"),"If this email belongs to a client account, a password reset link has been sent. Check the inbox (and spam).");
+  }catch(err){show(document.getElementById("forgotErr"),err.message);}
+  btn.disabled=false;btn.textContent="Send reset link →";
+});
+document.getElementById("recoveryForm").addEventListener("submit",async function(e){
+  e.preventDefault();hide(document.getElementById("recoveryErr"));
+  var p1=document.getElementById("newPassword").value, p2=document.getElementById("newPassword2").value;
+  if(p1.length<6){show(document.getElementById("recoveryErr"),"Password must be at least 6 characters.");return;}
+  if(p1!==p2){show(document.getElementById("recoveryErr"),"Passwords do not match.");return;}
+  var btn=document.getElementById("recoveryBtn");btn.disabled=true;btn.textContent="Saving…";
+  try{
+    var res=await fetch(SUPABASE_URL+"/auth/v1/user",{method:"PUT",headers:{"apikey":PUBLISHABLE_KEY,"Authorization":"Bearer "+(sessionStorage.getItem("adcraft_recovery_token")||""),"Content-Type":"application/json"},body:JSON.stringify({password:p1})});
+    if(!res.ok) throw new Error("Could not save the new password. The reset link may have expired — please request a new one.");
+    history.replaceState(null,"",location.pathname);sessionStorage.removeItem("adcraft_recovery_token");
+    document.getElementById("authView").style.display="block";document.getElementById("recoveryView").style.display="none";
+    show(document.getElementById("authOk"),"New password saved. Please sign in with it.");
+  }catch(err){show(document.getElementById("recoveryErr"),err.message);}
+  btn.disabled=false;btn.textContent="Save new password →";
+});
+(function handleOAuthAndRecovery(){
+  var hash=location.hash;
+  var am=hash.match(/access_token=([^&]+)/);
+  if(am){
+    var type=(hash.match(/type=([^&]+)/)||[])[1]||"";
+    sessionStorage.setItem("adcraft_client_token",decodeURIComponent(am[1]));
+    if(type==="recovery"){sessionStorage.setItem("adcraft_recovery_token",decodeURIComponent(am[1]));document.getElementById("authView").style.display="none";document.getElementById("appView").style.display="none";document.getElementById("recoveryView").style.display="block";return;}
+    var em=sessionStorage.getItem("adcraft_client_email")||"";
+    document.getElementById("signedInAs").textContent="Signed in. Showing only enquiries linked to your email.";
+    history.replaceState(null,"",location.pathname);
+    document.getElementById("authView").style.display="none";document.getElementById("appView").style.display="block";
+    loadCases();
+  }
+})();
+
+async function loadCases(){
+  hide(document.getElementById("appErr"));hide(document.getElementById("appOk"));
+  var list=document.getElementById("casesList");list.innerHTML="<p class='muted'>Loading your enquiries…</p>";
+  try{
+    var res=await fetch(SUPABASE_URL+"/rest/v1/client_cases?select=id,lead_id,client_email,status,team_update,created_at,updated_at&order=created_at.desc",{headers:authHeaders()});
+    if(res.status===401){sessionStorage.removeItem("adcraft_client_token");showAuth("Your session expired. Please sign in again.");return;}
+    if(!res.ok) throw new Error("Could not load your enquiries. Please refresh and try again.");
+    var cases=await res.json();
+    document.getElementById("casesEmpty").style.display=cases.length?"none":"block";
+    list.innerHTML=cases.map(function(c){
+      return "<article class='case'><strong>Enquiry</strong> <span class='badge "+esc(c.status)+"'>"+esc(c.status)+"</span><div class='meta'>Linked email: "+esc(c.client_email)+" · Submitted: "+fmtDate(c.created_at)+" · Last updated: "+fmtDate(c.updated_at)+"</div>"+(c.team_update?"<div style='margin-top:8px'><strong>Latest update from the team:</strong><div>"+esc(c.team_update)+"</div></div>":"<div class='muted' style='margin-top:8px'>No team update yet — the team will update this when your enquiry moves forward.</div>")+"</article>";
+    }).join("");
+  }catch(err){list.innerHTML="";show(document.getElementById("appErr"),err.message);}
+}
+</script>
+</body>
+</html>
