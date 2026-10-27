@@ -52,7 +52,7 @@
 
 <section id="authView" class="card">
   <h1>Client sign-in</h1>
-  <p class="lead">Create an account or sign in to track your enquiry step by step. Use the same email you used for your enquiry, so the team can link it to your account.</p>
+  <p class="lead">Sign in to track your enquiries.</p>
   <div id="authErr" class="err" role="alert"></div>
   <div id="authOk" class="ok" role="status"></div>
   <div class="tabs">
@@ -72,7 +72,6 @@
   </form>
   <div style="margin-top:16px">
     <button id="googleBtn" class="google" type="button">Continue with Google</button>
-    <p class="muted">Google sign-in works only after the Google provider is enabled for this project in Supabase. If it shows a provider error, use Email/Password sign-in instead and tell the team.</p>
   </div>
   <p style="margin-top:14px"><button id="forgotToggle" class="link" type="button">Forgot password?</button></p>
   <div id="forgotBox" style="display:none">
@@ -82,7 +81,6 @@
     <div id="forgotMsg" class="ok" role="status"></div>
     <div id="forgotErr" class="err" role="alert"></div>
   </div>
-  <p class="muted">Your session is kept only in this browser tab and clears when the tab closes. You see only cases linked to your own email — never another client's data. No proposal documents are shared through this portal yet.</p>
 </section>
 
 <section id="recoveryView" class="card" style="display:none">
@@ -271,6 +269,9 @@ document.getElementById("submitForm").addEventListener("submit",async function(e
     showApp();loadCases();
   }
 })();
+// Session restore: a saved session in this tab must survive a page refresh.
+// Without this, the page always opened on the sign-in screen even though the token was still stored.
+if(!location.hash && token()){showApp();loadCases();}
 
 function timelineHtml(status){
   if(status==="lost"){
