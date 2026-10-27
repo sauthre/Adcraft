@@ -255,16 +255,20 @@ document.getElementById("submitForm").addEventListener("submit",async function(e
   }catch(err){show(document.getElementById("submitErr"),err.message);}
   btn.disabled=false;btn.textContent="Submit requirement →";
 });
-(function handleOAuthAndRecovery(){
+(async function handleOAuthAndRecovery(){
   var hash=location.hash;
   var am=hash.match(/access_token=([^&]+)/);
   if(am){
     var type=(hash.match(/type=([^&]+)/)||[])[1]||"";
     sessionStorage.setItem("adcraft_client_token",decodeURIComponent(am[1]));
     if(type==="recovery"){sessionStorage.setItem("adcraft_recovery_token",decodeURIComponent(am[1]));document.getElementById("authView").style.display="none";document.getElementById("appView").style.display="none";document.getElementById("recoveryView").style.display="block";return;}
-    document.getElementById("authView").style.display="none";document.getElementById("appView").style.display="block";
+    try{
+      var ures=await fetch(SUPABASE_URL+"/auth/v1/user",{headers:{"apikey":PUBLISHABLE_KEY,"Authorization":"Bearer "+decodeURIComponent(am[1])}});
+      var udata=await ures.json();
+      if(udata&&udata.email) sessionStorage.setItem("adcraft_client_email",udata.email);
+    }catch(e){}
     history.replaceState(null,"",location.pathname);
-    loadCases();
+    showApp();loadCases();
   }
 })();
 
