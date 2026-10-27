@@ -167,7 +167,7 @@ function fmtDate(iso){try{return new Date(iso).toLocaleString("en-IN",{timeZone:
 function authHeaders(){return {"apikey":PUBLISHABLE_KEY,"Authorization":"Bearer "+token()};}
 
 function showAuth(msg){document.getElementById("authView").style.display="block";document.getElementById("appView").style.display="none";document.getElementById("recoveryView").style.display="none";if(msg) show(document.getElementById("authErr"),msg);}
-function showApp(){hide(document.getElementById("authErr"));document.getElementById("authView").style.display="none";document.getElementById("recoveryView").style.display="none";document.getElementById("appView").style.display="block";document.getElementById("greeting").textContent="Welcome back";document.getElementById("signedInAs").textContent="Signed in as "+signedEmail()+". Showing only enquiries linked to this email.";}
+function showApp(){hide(document.getElementById("authErr"));document.getElementById("authView").style.display="none";document.getElementById("recoveryView").style.display="none";document.getElementById("appView").style.display="block";document.getElementById("greeting").textContent="Welcome back";if(window.__clientTimer) clearInterval(window.__clientTimer);window.__clientTimer=setInterval(function(){if(token() && document.visibilityState==="visible") loadCases();},60000);document.getElementById("signedInAs").textContent="Signed in as "+signedEmail()+". Showing only enquiries linked to this email.";}
 function setMode(m){
   mode=m;
   document.getElementById("tabSignin").classList.toggle("active",m==="signin");
@@ -209,7 +209,7 @@ document.getElementById("googleBtn").addEventListener("click",function(){
   window.location.href=SUPABASE_URL+"/auth/v1/authorize?provider=google&redirect_to="+encodeURIComponent(CLIENT_URL)+"&apikey="+encodeURIComponent(PUBLISHABLE_KEY);
 });
 document.getElementById("logoutBtn").addEventListener("click",function(){
-  sessionStorage.removeItem("adcraft_client_token");sessionStorage.removeItem("adcraft_client_email");showAuth("");
+  if(window.__clientTimer) clearInterval(window.__clientTimer);sessionStorage.removeItem("adcraft_client_token");sessionStorage.removeItem("adcraft_client_email");showAuth("");
 });
 document.getElementById("refreshBtn").addEventListener("click",function(){loadCases();});
 document.getElementById("forgotToggle").addEventListener("click",function(){var b=document.getElementById("forgotBox");b.style.display=b.style.display==="none"?"block":"none";});
@@ -248,7 +248,7 @@ document.getElementById("submitForm").addEventListener("submit",async function(e
     var body={name:name,company:company||null,email:signedEmail(),phone:(phone&&phone.replace(/\D/g,"").length>=7)?phone:null,message:msg,source:"website"};
     var res=await fetch(SUPABASE_URL+"/rest/v1/leads",{method:"POST",headers:{"apikey":PUBLISHABLE_KEY,"Content-Type":"application/json","Prefer":"return=minimal"},body:JSON.stringify(body)});
     if(!res.ok) throw new Error("Could not submit your requirement. Please try again, or use the main Contact Us form.");
-    show(document.getElementById("submitOk"),"Requirement submitted. Thank you! The team will review it (usually within 1 business day) and link it to your portal, so you can track it here.");
+    show(document.getElementById("submitOk"),"Requirement submitted. Thank you! The team will review it (usually within 1 business day) and link it to your portal, so you can track it here.");loadCases();
     document.getElementById("qMessage").value="";
   }catch(err){show(document.getElementById("submitErr"),err.message);}
   btn.disabled=false;btn.textContent="Submit requirement →";
