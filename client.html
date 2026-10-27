@@ -136,7 +136,7 @@
       <textarea id="qMessage" required></textarea>
       <div style="margin-top:16px"><button id="submitBtn" type="submit">Submit requirement →</button></div>
     </form>
-    <p class="muted">After you submit, the team reviews it (usually within 1 business day) and links it to your portal. Until it is linked, it will not appear in the timeline above — that is by design, so no enquiry is ever shown before the team has actually received it.</p>
+    <p class="muted">After you submit, your enquiry appears in your timeline below automatically, and the team reviews it (usually within 1 business day). If you submitted an enquiry through the main Contact Us form before creating your account, the team links it to your portal.</p>
     <p><a href="./#contact" style="color:var(--blue);font-weight:700">Message the team via the main Contact Us form →</a></p>
   </div>
   <p class="muted">This portal is read-only for tracking: you view your enquiry status, the team's latest update, and your relationship manager here. To change anything about an enquiry, contact the AdCraft team.</p>
@@ -248,7 +248,7 @@ document.getElementById("submitForm").addEventListener("submit",async function(e
     var body={name:name,company:company||null,email:signedEmail(),phone:(phone&&phone.replace(/\D/g,"").length>=7)?phone:null,message:msg,source:"website"};
     var res=await fetch(SUPABASE_URL+"/rest/v1/leads",{method:"POST",headers:{"apikey":PUBLISHABLE_KEY,"Content-Type":"application/json","Prefer":"return=minimal"},body:JSON.stringify(body)});
     if(!res.ok) throw new Error("Could not submit your requirement. Please try again, or use the main Contact Us form.");
-    show(document.getElementById("submitOk"),"Requirement submitted. Thank you! The team will review it (usually within 1 business day) and link it to your portal, so you can track it here.");loadCases();
+    show(document.getElementById("submitOk"),"Requirement submitted. Thank you! It now appears in your timeline below, and the team will review it (usually within 1 business day).");loadCases();
     document.getElementById("qMessage").value="";
   }catch(err){show(document.getElementById("submitErr"),err.message);}
   btn.disabled=false;btn.textContent="Submit requirement →";
@@ -290,7 +290,7 @@ async function loadCases(){
   hide(document.getElementById("appErr"));hide(document.getElementById("appOk"));
   var list=document.getElementById("casesList");list.innerHTML="<p class='muted'>Loading your enquiries…</p>";
   try{
-    var res=await fetch(SUPABASE_URL+"/rest/v1/client_cases?select=id,lead_id,client_email,status,team_update,assigned_manager_name,assigned_manager_email,created_at,updated_at&order=created_at.desc",{headers:authHeaders()});
+    var res=await fetch(SUPABASE_URL+"/rest/v1/client_cases?select=id,lead_id,client_email,status,team_update,assigned_manager_name,assigned_manager_email,created_at,updated_at,follow_up_date&order=created_at.desc",{headers:authHeaders()});
     if(res.status===401){sessionStorage.removeItem("adcraft_client_token");showAuth("Your session expired. Please sign in again.");return;}
     if(!res.ok) throw new Error("Could not load your enquiries. Please refresh and try again.");
     var cases=await res.json();
@@ -305,7 +305,7 @@ async function loadCases(){
       document.getElementById("rmBody").innerHTML="<div class='rm'><div class='avatar'>?</div><div><strong>Not assigned yet</strong><div style='margin-top:6px'>Your relationship manager will be assigned once your enquiry is qualified, so one person keeps everything smooth between us. Until then, the AdCraft team handles your enquiry directly.</div></div></div>";
     }
     list.innerHTML=cases.map(function(c){
-      return "<article class='case'><strong>Enquiry</strong> <span class='badge "+esc(c.status)+"'>"+esc(c.status)+"</span><div class='meta'>Linked email: "+esc(c.client_email)+" · Submitted: "+fmtDate(c.created_at)+" · Last updated: "+fmtDate(c.updated_at)+"</div>"+timelineHtml(c.status)+(c.team_update?"<div style='margin-top:10px'><strong>Latest update from the team:</strong><div>"+esc(c.team_update)+"</div></div>":"<div class='muted' style='margin-top:10px'>No team update yet — the team will update this when your enquiry moves forward.</div>")+"</article>";
+      return "<article class='case'><strong>Enquiry</strong> <span class='badge "+esc(c.status)+"'>"+esc(c.status)+"</span><div class='meta'>Linked email: "+esc(c.client_email)+" · Submitted: "+fmtDate(c.created_at)+" · Last updated: "+fmtDate(c.updated_at)+(c.follow_up_date?" · Next follow-up: "+esc(c.follow_up_date):"")+"</div>"+timelineHtml(c.status)+(c.team_update?"<div style='margin-top:10px'><strong>Latest update from the team:</strong><div>"+esc(c.team_update)+"</div></div>":"<div class='muted' style='margin-top:10px'>No team update yet — the team will update this when your enquiry moves forward.</div>")+"</article>";
     }).join("");
   }catch(err){list.innerHTML="";show(document.getElementById("appErr"),err.message);}
 }
