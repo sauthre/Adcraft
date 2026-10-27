@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AdCraft Automations — Client Portal</title>
+<meta name="description" content="AdCraft Automations client portal: create an account, sign in, track your enquiry step by step, and see your relationship manager.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{--navy:#12263F;--blue:#0B74D6;--bg:#F4F7FB;--card:#fff;--ink:#12263F;--muted:#64788F;--line:#D9E4F0;--green:#1e7d4d;--red:#b3261e;--amber:#8a6d00}
+  *{box-sizing:border-box} body{margin:0;font-family:Manrope,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink);line-height:1.6}
+  .wrap{max-width:880px;margin:0 auto;padding:20px}
+  header{position:sticky;top:0;z-index:50;background:rgba(244,247,251,.96);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-bottom:1px solid var(--line)} header .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;padding-top:10px;padding-bottom:10px}
+  .brand{display:flex;align-items:center;gap:10px;font-family:Sora,Manrope,sans-serif;font-weight:800;font-size:19px;min-height:44px;line-height:1.15;white-space:nowrap} .brand em{color:var(--blue);font-style:normal} .logo-img{width:44px;height:44px;flex:0 0 44px;border-radius:11px;object-fit:contain;background:#fff;border:1px solid var(--line);padding:4px}
+  .tag{background:var(--blue);color:#fff;border-radius:999px;padding:4px 12px;font-size:13px;font-weight:700}
+  .home-link{color:var(--ink);font-weight:700;text-decoration:none;font-size:14px}
+  footer{padding:28px 0 40px;border-top:1px solid var(--line);color:var(--muted);font-size:13px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;align-items:center} footer a{color:var(--blue);font-weight:700;text-decoration:none}
+  h1{font-size:26px;margin:8px 0 4px} h2{font-size:20px;margin:4px 0 8px} p.lead{color:var(--muted);margin:0 0 16px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:20px;margin:16px 0;animation:fadeUp .45s ease both}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+  @media(prefers-reduced-motion:reduce){.card{animation:none} .step .dot{animation:none!important}}
+  label{display:block;font-weight:700;margin:12px 0 6px} input,textarea{width:100%;padding:13px 14px;border:1px solid var(--line);border-radius:10px;font-size:16px;background:#fff;color:var(--ink)}
+  textarea{min-height:110px;resize:vertical}
+  button{background:var(--blue);color:#fff;border:0;border-radius:10px;padding:13px 20px;font-size:16px;font-weight:700;cursor:pointer;min-height:48px}
+  button.secondary{background:#fff;color:var(--navy);border:1px solid var(--line)} button.google{background:#fff;color:var(--ink);border:1px solid var(--line);width:100%}
+  button:disabled{opacity:.6;cursor:wait}
+  .err{background:#fdecea;color:var(--red);border:1px solid #f5c2bd;border-radius:10px;padding:12px 14px;margin:12px 0;display:none}
+  .ok{background:#e6f4ec;color:var(--green);border:1px solid #bfe3cd;border-radius:10px;padding:12px 14px;margin:12px 0;display:none}
+  .muted{color:var(--muted);font-size:14px} .link{background:none;border:0;color:var(--blue);font-weight:700;cursor:pointer;padding:0;min-height:auto;text-decoration:underline}
+  .tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px} .tabs button.secondary.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+  .stats{display:flex;gap:12px;flex-wrap:wrap;margin:12px 0} .stat{flex:1;min-width:140px;background:#eaf2fc;border-radius:12px;padding:14px} .stat b{font-size:26px;display:block} .stat span{color:var(--muted);font-size:14px}
+  .case{border:1px solid var(--line);border-radius:12px;padding:16px;margin:12px 0;background:#fff;animation:fadeUp .45s ease both}
+  .badge{display:inline-block;background:#eaf2fc;color:var(--navy);border-radius:999px;padding:3px 10px;font-size:13px;font-weight:700;text-transform:capitalize}
+  .badge.won{background:#e6f4ec;color:var(--green)} .badge.lost{background:#eee;color:#666}
+  .meta{color:var(--muted);font-size:14px;margin-top:4px}
+  .topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+  .timeline{display:flex;gap:0;margin:16px 0 8px;flex-wrap:wrap} .step{flex:1;min-width:110px;position:relative;padding-top:26px;font-size:13px;color:var(--muted)}
+  .step .dot{position:absolute;top:0;left:0;width:20px;height:20px;border-radius:50%;background:#cbd8e6;border:2px solid #fff;box-shadow:0 0 0 1px var(--line)}
+  .step.done{color:var(--ink);font-weight:600} .step.done .dot{background:var(--green)}
+  .step.current{color:var(--navy);font-weight:800} .step.current .dot{background:var(--blue);animation:pulse 2s infinite}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(11,116,214,.35)}100%{box-shadow:0 0 0 10px rgba(11,116,214,0)}}
+  .nextbox{background:#eaf2fc;border-radius:10px;padding:12px 14px;margin-top:10px;font-size:15px}
+  .rm{display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap} .rm .avatar{width:52px;height:52px;border-radius:50%;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:20px;flex:0 0 auto}
+  @media(max-width:600px){.wrap{padding:16px} h1{font-size:22px} .step{min-width:90px}}
+</style>
+</head>
+<body>
+<header><div class="wrap"><div class="brand"><img class="logo-img" src="data:image/webp;base64,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" alt="AdCraft Automations logo">AdCraft <em>Automations</em></div><div style="display:flex;gap:14px;align-items:center"><a class="home-link" href="./">← Back to homepage</a><div class="tag">Client Portal</div></div></div></header>
+<main class="wrap">
+
+<section id="authView" class="card">
+  <h1>Client sign-in</h1>
+  <p class="lead">Sign in to track your enquiries.</p>
+  <div id="authErr" class="err" role="alert"></div>
+  <div id="authOk" class="ok" role="status"></div>
+  <div class="tabs">
+    <button id="tabSignin" class="secondary active" type="button">Sign in</button>
+    <button id="tabSignup" class="secondary" type="button">Create account</button>
+  </div>
+  <form id="authForm">
+    <label for="email">Email</label>
+    <input id="email" type="email" autocomplete="username" required>
+    <label for="password">Password</label>
+    <input id="password" type="password" autocomplete="current-password" required>
+    <div id="confirmWrap" style="display:none">
+      <label for="password2">Confirm password</label>
+      <input id="password2" type="password" autocomplete="new-password">
+    </div>
+    <div style="margin-top:16px"><button id="authBtn" type="submit">Sign in →</button></div>
+  </form>
+  <div style="margin-top:16px">
+    <button id="googleBtn" class="google" type="button">Continue with Google</button>
+  </div>
+  <p style="margin-top:14px"><button id="forgotToggle" class="link" type="button">Forgot password?</button></p>
+  <div id="forgotBox" style="display:none">
+    <label for="forgotEmail">Email for reset link</label>
+    <input id="forgotEmail" type="email" placeholder="Your client account email">
+    <div style="margin-top:12px"><button id="forgotBtn" type="button">Send reset link →</button></div>
+    <div id="forgotMsg" class="ok" role="status"></div>
+    <div id="forgotErr" class="err" role="alert"></div>
+  </div>
+</section>
+
+<section id="recoveryView" class="card" style="display:none">
+  <h1>Set a new password</h1>
+  <p class="lead">You arrived here from a password reset link. Choose a new password for your client account.</p>
+  <div id="recoveryErr" class="err" role="alert"></div>
+  <form id="recoveryForm">
+    <label for="newPassword">New password</label>
+    <input id="newPassword" type="password" autocomplete="new-password" required>
+    <label for="newPassword2">Confirm new password</label>
+    <input id="newPassword2" type="password" autocomplete="new-password" required>
+    <div style="margin-top:16px"><button id="recoveryBtn" type="submit">Save new password →</button></div>
+  </form>
+</section>
+
+<section id="appView" style="display:none">
+  <div class="topbar"><h1 id="greeting">My enquiries</h1><button id="logoutBtn" class="secondary" type="button">Sign out</button></div>
+  <p class="lead" id="signedInAs"></p>
+  <div id="appErr" class="err" role="alert"></div>
+  <div id="appOk" class="ok" role="status"></div>
+  <div class="stats">
+    <div class="stat"><b id="statTotal">0</b><span>Total enquiries</span></div>
+    <div class="stat"><b id="statActive">0</b><span>In progress</span></div>
+    <div class="stat"><b id="statWon">0</b><span>Work started</span></div>
+  </div>
+  <div style="margin-top:8px"><button id="refreshBtn" class="secondary" type="button">Refresh</button></div>
+
+  <div class="card" id="rmCard">
+    <h2>Your Relationship Manager</h2>
+    <div id="rmBody"></div>
+  </div>
+
+  <div id="emptyCard" class="card" style="display:none">
+    <h2>No enquiry yet</h2>
+    <p>You have no enquiry linked to this email yet. Submit your query or requirement below so we can work together — the team will link it to your portal and you will be able to track it here, step by step, until work starts.</p>
+  </div>
+
+  <div id="casesList" style="margin-top:8px"></div>
+
+  <div class="card">
+    <h2>Submit your requirement</h2>
+    <p class="lead">Tell us what you want to automate. Your email is already filled from your signed-in account, so the team can link this to your portal.</p>
+    <div id="submitErr" class="err" role="alert"></div>
+    <div id="submitOk" class="ok" role="status"></div>
+    <form id="submitForm">
+      <label for="qName">Your name</label>
+      <input id="qName" type="text" required>
+      <label for="qCompany">Company (optional)</label>
+      <input id="qCompany" type="text">
+      <label for="qPhone">Phone (optional)</label>
+      <input id="qPhone" type="tel">
+      <label for="qMessage">What do you want to automate? What manual work takes the most time today?</label>
+      <textarea id="qMessage" required></textarea>
+      <div style="margin-top:16px"><button id="submitBtn" type="submit">Submit requirement →</button></div>
+    </form>
+    <p class="muted">After you submit, your enquiry appears in your timeline below automatically, and the team reviews it (usually within 1 business day). If you submitted an enquiry through the main Contact Us form before creating your account, the team links it to your portal.</p>
+    <p><a href="./#contact" style="color:var(--blue);font-weight:700">Message the team via the main Contact Us form →</a></p>
+  </div>
+  <p class="muted">This portal is read-only for tracking: you view your enquiry status, the team's latest update, and your relationship manager here. To change anything about an enquiry, contact the AdCraft team.</p>
+</section>
+</main>
+<footer class="wrap"><div>© AdCraft Automations — Client Portal</div><div><a href="./">Back to homepage →</a> · <a href="./#contact">Contact Us →</a></div></footer>
+
+<script>
+var SUPABASE_URL = "https://tkcbwqkjtisogjmwwmxm.supabase.co";
+var PUBLISHABLE_KEY = "sb_publishable_vZTpaQjplgb51U1KoYkiuA_pOqt5VZg";
+var CLIENT_URL = "https://adcraftautomations.com/client.html";
+var mode = "signin";
+var STEPS = [
+  {key:"new",label:"Enquiry received",next:"Next: the team reviews your enquiry, usually within 1 business day."},
+  {key:"contacted",label:"Team reviewed",next:"Next: scope discussion — the team confirms what to automate first."},
+  {key:"qualified",label:"Qualified",next:"Next: a proposal is prepared for your review."},
+  {key:"proposal",label:"Proposal shared",next:"Next: awaiting your go-ahead. Once you approve, work starts."},
+  {key:"won",label:"Work starts",next:"Work has started. Your relationship manager keeps you updated from here."}
+];
+var NEXT = {}; STEPS.forEach(function(s){NEXT[s.key]=s.next;});
+
+function esc(v){return String(v==null?"":v).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
+function token(){return sessionStorage.getItem("adcraft_client_token")||"";}
+function signedEmail(){return sessionStorage.getItem("adcraft_client_email")||"";}
+function show(el,msg){el.textContent=msg;el.style.display="block";}
+function hide(el){el.style.display="none";}
+function fmtDate(iso){try{return new Date(iso).toLocaleString("en-IN",{timeZone:"Asia/Kolkata",day:"numeric",month:"short",year:"numeric",hour:"numeric",minute:"2-digit"});}catch(e){return iso||"—";}}
+function authHeaders(){return {"apikey":PUBLISHABLE_KEY,"Authorization":"Bearer "+token()};}
+
+function showAuth(msg){document.getElementById("authView").style.display="block";document.getElementById("appView").style.display="none";document.getElementById("recoveryView").style.display="none";if(msg) show(document.getElementById("authErr"),msg);}
+function showApp(){hide(document.getElementById("authErr"));document.getElementById("authView").style.display="none";document.getElementById("recoveryView").style.display="none";document.getElementById("appView").style.display="block";document.getElementById("greeting").textContent="Welcome back";if(window.__clientTimer) clearInterval(window.__clientTimer);window.__clientTimer=setInterval(function(){if(token() && document.visibilityState==="visible") loadCases();},60000);document.getElementById("signedInAs").textContent="Signed in as "+signedEmail()+". Showing only enquiries linked to this email.";}
+function setMode(m){
+  mode=m;
+  document.getElementById("tabSignin").classList.toggle("active",m==="signin");
+  document.getElementById("tabSignup").classList.toggle("active",m==="signup");
+  document.getElementById("confirmWrap").style.display=m==="signup"?"block":"none";
+  document.getElementById("password").setAttribute("autocomplete",m==="signup"?"new-password":"current-password");
+  document.getElementById("authBtn").textContent=m==="signup"?"Create account →":"Sign in →";
+}
+document.getElementById("tabSignin").addEventListener("click",function(){setMode("signin");});
+document.getElementById("tabSignup").addEventListener("click",function(){setMode("signup");});
+
+document.getElementById("authForm").addEventListener("submit",async function(e){
+  e.preventDefault();hide(document.getElementById("authErr"));hide(document.getElementById("authOk"));
+  var email=document.getElementById("email").value.trim(), pw=document.getElementById("password").value;
+  if(mode==="signup"){
+    var pw2=document.getElementById("password2").value;
+    if(pw.length<6){show(document.getElementById("authErr"),"Password must be at least 6 characters.");return;}
+    if(pw!==pw2){show(document.getElementById("authErr"),"Passwords do not match.");return;}
+  }
+  var btn=document.getElementById("authBtn");btn.disabled=true;btn.textContent=mode==="signup"?"Creating account…":"Signing in…";
+  try{
+    if(mode==="signup"){
+      var res=await fetch(SUPABASE_URL+"/auth/v1/signup",{method:"POST",headers:{"apikey":PUBLISHABLE_KEY,"Content-Type":"application/json"},body:JSON.stringify({email:email,password:pw,redirect_to:CLIENT_URL})});
+      var data=await res.json();
+      if(!res.ok) throw new Error((data&&data.msg)||"Could not create the account. Please try again.");
+      if(!data.access_token){show(document.getElementById("authOk"),"Account created. Please check your email for the confirmation link, then sign in here.");btn.disabled=false;btn.textContent="Create account →";return;}
+      sessionStorage.setItem("adcraft_client_token",data.access_token);sessionStorage.setItem("adcraft_client_email",email);
+    }else{
+      var res2=await fetch(SUPABASE_URL+"/auth/v1/token?grant_type=password",{method:"POST",headers:{"apikey":PUBLISHABLE_KEY,"Content-Type":"application/json"},body:JSON.stringify({email:email,password:pw,redirect_to:CLIENT_URL})});
+      var data2=await res2.json();
+      if(!res2.ok) throw new Error("Invalid email or password. Please try again.");
+      sessionStorage.setItem("adcraft_client_token",data2.access_token);sessionStorage.setItem("adcraft_client_email",email);
+    }
+    document.getElementById("password").value="";document.getElementById("password2").value="";showApp();await loadCases();
+  }catch(err){show(document.getElementById("authErr"),err.message||"Something went wrong. Please try again.");}
+  btn.disabled=false;btn.textContent=mode==="signup"?"Create account →":"Sign in →";
+});
+document.getElementById("googleBtn").addEventListener("click",function(){
+  window.location.href=SUPABASE_URL+"/auth/v1/authorize?provider=google&redirect_to="+encodeURIComponent(CLIENT_URL)+"&apikey="+encodeURIComponent(PUBLISHABLE_KEY);
+});
+document.getElementById("logoutBtn").addEventListener("click",function(){
+  if(window.__clientTimer) clearInterval(window.__clientTimer);sessionStorage.removeItem("adcraft_client_token");sessionStorage.removeItem("adcraft_client_email");showAuth("");
+});
+document.getElementById("refreshBtn").addEventListener("click",function(){loadCases();});
+document.getElementById("forgotToggle").addEventListener("click",function(){var b=document.getElementById("forgotBox");b.style.display=b.style.display==="none"?"block":"none";});
+document.getElementById("forgotBtn").addEventListener("click",async function(){
+  hide(document.getElementById("forgotErr"));hide(document.getElementById("forgotMsg"));
+  var email=document.getElementById("forgotEmail").value.trim();if(!email){show(document.getElementById("forgotErr"),"Please enter your client account email first.");return;}
+  var btn=this;btn.disabled=true;btn.textContent="Sending…";
+  try{
+    var res=await fetch(SUPABASE_URL+"/auth/v1/recover",{method:"POST",headers:{"apikey":PUBLISHABLE_KEY,"Content-Type":"application/json"},body:JSON.stringify({email:email,redirect_to:CLIENT_URL})});
+    if(!res.ok) throw new Error("Could not send the reset link. Please try again.");
+    show(document.getElementById("forgotMsg"),"If this email belongs to a client account, a password reset link has been sent. Check the inbox (and spam).");
+  }catch(err){show(document.getElementById("forgotErr"),err.message);}
+  btn.disabled=false;btn.textContent="Send reset link →";
+});
+document.getElementById("recoveryForm").addEventListener("submit",async function(e){
+  e.preventDefault();hide(document.getElementById("recoveryErr"));
+  var p1=document.getElementById("newPassword").value, p2=document.getElementById("newPassword2").value;
+  if(p1.length<6){show(document.getElementById("recoveryErr"),"Password must be at least 6 characters.");return;}
+  if(p1!==p2){show(document.getElementById("recoveryErr"),"Passwords do not match.");return;}
+  var btn=document.getElementById("recoveryBtn");btn.disabled=true;btn.textContent="Saving…";
+  try{
+    var res=await fetch(SUPABASE_URL+"/auth/v1/user",{method:"PUT",headers:{"apikey":PUBLISHABLE_KEY,"Authorization":"Bearer "+(sessionStorage.getItem("adcraft_recovery_token")||""),"Content-Type":"application/json"},body:JSON.stringify({password:p1})});
+    if(!res.ok) throw new Error("Could not save the new password. The reset link may have expired — please request a new one.");
+    history.replaceState(null,"",location.pathname);sessionStorage.removeItem("adcraft_recovery_token");
+    document.getElementById("authView").style.display="block";document.getElementById("recoveryView").style.display="none";
+    show(document.getElementById("authOk"),"New password saved. Please sign in with it.");
+  }catch(err){show(document.getElementById("recoveryErr"),err.message);}
+  btn.disabled=false;btn.textContent="Save new password →";
+});
+document.getElementById("submitForm").addEventListener("submit",async function(e){
+  e.preventDefault();hide(document.getElementById("submitErr"));hide(document.getElementById("submitOk"));
+  var name=document.getElementById("qName").value.trim(), company=document.getElementById("qCompany").value.trim(), phone=document.getElementById("qPhone").value.trim(), msg=document.getElementById("qMessage").value.trim();
+  if(!name||!msg){show(document.getElementById("submitErr"),"Please fill your name and requirement.");return;}
+  var btn=document.getElementById("submitBtn");btn.disabled=true;btn.textContent="Submitting…";
+  try{
+    var body={name:name,company:company||null,email:signedEmail(),phone:(phone&&phone.replace(/\D/g,"").length>=7)?phone:null,message:msg,source:"website"};
+    var res=await fetch(SUPABASE_URL+"/rest/v1/leads",{method:"POST",headers:{"apikey":PUBLISHABLE_KEY,"Content-Type":"application/json","Prefer":"return=minimal"},body:JSON.stringify(body)});
+    if(!res.ok) throw new Error("Could not submit your requirement. Please try again, or use the main Contact Us form.");
+    show(document.getElementById("submitOk"),"Requirement submitted. Thank you! It now appears in your timeline below, and the team will review it (usually within 1 business day).");loadCases();
+    document.getElementById("qMessage").value="";
+  }catch(err){show(document.getElementById("submitErr"),err.message);}
+  btn.disabled=false;btn.textContent="Submit requirement →";
+});
+(async function handleOAuthAndRecovery(){
+  var hash=location.hash;
+  var am=hash.match(/access_token=([^&]+)/);
+  if(am){
+    var type=(hash.match(/type=([^&]+)/)||[])[1]||"";
+    sessionStorage.setItem("adcraft_client_token",decodeURIComponent(am[1]));
+    if(type==="recovery"){sessionStorage.setItem("adcraft_recovery_token",decodeURIComponent(am[1]));document.getElementById("authView").style.display="none";document.getElementById("appView").style.display="none";document.getElementById("recoveryView").style.display="block";return;}
+    try{
+      var ures=await fetch(SUPABASE_URL+"/auth/v1/user",{headers:{"apikey":PUBLISHABLE_KEY,"Authorization":"Bearer "+decodeURIComponent(am[1])}});
+      var udata=await ures.json();
+      if(udata&&udata.email) sessionStorage.setItem("adcraft_client_email",udata.email);
+    }catch(e){}
+    history.replaceState(null,"",location.pathname);
+    showApp();loadCases();
+  }
+})();
+// Session restore: a saved session in this tab must survive a page refresh.
+// Without this, the page always opened on the sign-in screen even though the token was still stored.
+if(!location.hash && token()){showApp();loadCases();}
+
+function timelineHtml(status){
+  if(status==="lost"){
+    return "<div class='nextbox'>This enquiry is closed. If you would like to reopen it, contact the AdCraft team.</div>";
+  }
+  var idx=STEPS.findIndex(function(s){return s.key===status;}); if(idx<0) idx=0;
+  var html="<div class='timeline'>";
+  STEPS.forEach(function(s,i){
+    var cls=i<idx?"done":(i===idx?"current":"");
+    html+="<div class='step "+cls+"'><span class='dot'></span>"+esc(s.label)+"</div>";
+  });
+  html+="</div><div class='nextbox'>"+esc(NEXT[status]||NEXT["new"])+"</div>";
+  return html;
+}
+async function loadCases(){
+  hide(document.getElementById("appErr"));hide(document.getElementById("appOk"));
+  var list=document.getElementById("casesList");list.innerHTML="<p class='muted'>Loading your enquiries…</p>";
+  try{
+    var res=await fetch(SUPABASE_URL+"/rest/v1/client_cases?select=id,lead_id,client_email,status,team_update,assigned_manager_name,assigned_manager_email,created_at,updated_at,follow_up_date&order=created_at.desc",{headers:authHeaders()});
+    if(res.status===401){sessionStorage.removeItem("adcraft_client_token");showAuth("Your session expired. Please sign in again.");return;}
+    if(!res.ok) throw new Error("Could not load your enquiries. Please refresh and try again.");
+    var cases=await res.json();
+    document.getElementById("statTotal").textContent=cases.length;
+    document.getElementById("statActive").textContent=cases.filter(function(c){return c.status!=="won"&&c.status!=="lost";}).length;
+    document.getElementById("statWon").textContent=cases.filter(function(c){return c.status==="won";}).length;
+    document.getElementById("emptyCard").style.display=cases.length?"none":"block";
+    var assigned=cases.find(function(c){return c.assigned_manager_name||c.assigned_manager_email;});
+    if(assigned){
+      document.getElementById("rmBody").innerHTML="<div class='rm'><div class='avatar'>"+esc((assigned.assigned_manager_name||assigned.assigned_manager_email||"?").charAt(0).toUpperCase())+"</div><div><strong>"+esc(assigned.assigned_manager_name||"Your relationship manager")+"</strong>"+(assigned.assigned_manager_email?"<div class='muted'>"+esc(assigned.assigned_manager_email)+"</div>":"")+"<div style='margin-top:6px'>Your single point of contact — keeping everything smooth between us, with regular updates on your enquiry.</div></div></div>";
+    }else{
+      document.getElementById("rmBody").innerHTML="<div class='rm'><div class='avatar'>?</div><div><strong>Not assigned yet</strong><div style='margin-top:6px'>Your relationship manager will be assigned once your enquiry is qualified, so one person keeps everything smooth between us. Until then, the AdCraft team handles your enquiry directly.</div></div></div>";
+    }
+    list.innerHTML=cases.map(function(c){
+      return "<article class='case'><strong>Enquiry</strong> <span class='badge "+esc(c.status)+"'>"+esc(c.status)+"</span><div class='meta'>Linked email: "+esc(c.client_email)+" · Submitted: "+fmtDate(c.created_at)+" · Last updated: "+fmtDate(c.updated_at)+(c.follow_up_date?" · Next follow-up: "+esc(c.follow_up_date):"")+"</div>"+timelineHtml(c.status)+(c.team_update?"<div style='margin-top:10px'><strong>Latest update from the team:</strong><div>"+esc(c.team_update)+"</div></div>":"<div class='muted' style='margin-top:10px'>No team update yet — the team will update this when your enquiry moves forward.</div>")+"</article>";
+    }).join("");
+  }catch(err){list.innerHTML="";show(document.getElementById("appErr"),err.message);}
+}
+</script>
+</body>
+</html>
